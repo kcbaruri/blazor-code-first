@@ -1,0 +1,87 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+@using System.Net
+@using System.IO
+
+@inject HttpClient Http
+@page "/State/EditState"
+@inject NavigationManager NavigationManager
+
+
+<h3>Edit state</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="custom-control-label">State Name</label>
+            <input for name="Name" value="" bind="@state.Name" placeholder="Enter state name" />
+        </div>
+
+        <div class="form-group">
+            <label for="Status" class="custom-control-label">State Code</label>
+            <select for="Status" class="form-control" bind="@state.Code">
+                <option disabled hidden selected value="">--Select state code--</option>
+                <option value="InStock">In Stock</option>
+                <option value="OutOfStock">Out of Stock</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" onclick="">Save</button>
+        </div>
+    </div>
+</div>
+@functions {
+
+    string message = "";
+
+    [Parameter]
+    public string Id { get; set; }
+
+    State state = new State();
+
+    protected async Task OnInitAsync()
+    {
+        string html = string.Empty;
+        string url = $"api/State/GetStateById/{Convert.ToInt32(Id)}";
+
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        request.AutomaticDecompression = DecompressionMethods.GZip;
+
+        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+        using (Stream stream = response.GetResponseStream())
+        using (StreamReader reader = new StreamReader(stream))
+        {
+            dynamic json = JsonConvert.DeserializeObject(reader.ReadToEnd());
+
+            foreach(var item in json)
+            {
+                state.Name = item.Name;
+                state.Code = item.Code;
+                Id = item.Id;
+            }
+        }
+    }
+
+    protected async Task UpdateState()
+    {
+        using (var client = new HttpClient())
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, "api/State/UpdateState");
+            request.Content = new StringContent(
+                JsonConvert.SerializeObject(new { Name = state.Name, Code = state.Code, UpdatedAt = DateTime.UtcNow }),
+                Encoding.UTF8, "application/json");
+
+            var response = await client.SendAsync(request);
+
+        }
+
+        RedirectTo();
+    }
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("State/AllStates");
+    }
+}

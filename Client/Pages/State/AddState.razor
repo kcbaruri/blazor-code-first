@@ -1,0 +1,48 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+
+@inject HttpClient Http
+@page "/State/States"
+
+    <h3>Add State</h3>
+    <button onclick="@RedirectToAdd">Add New State</button>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="custom-control-label">State Name</label>
+                <input for name="Name" value="" bind="@state.Name" placeholder="Enterstate name" />
+            </div>
+
+            <div class="form-group">
+                <label class="custom-control-label">State Code</label>
+                <input for name="Code" value="" bind="@state.Code" placeholder="Enter code" />
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" onclick="">Save</button>
+            </div>
+        </div>
+    </div>
+    @code {
+        State state = new State();
+        string message = "";
+
+        protected async Task CreateState()
+        {
+            using (var client = new HttpClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "api/State/AddState");
+                request.Content = new StringContent(
+                    JsonConvert.SerializeObject(new { Name = state.Name, Code = state.Code, CreatedAt = DateTime.UtcNow }),
+                    Encoding.UTF8, "application/json");
+
+                var response = await client.SendAsync(request);
+            }
+        }
+
+        void RedirectToAdd()
+        {
+            NavigationManager.NavigateTo("State/AddState");
+        }
+    }

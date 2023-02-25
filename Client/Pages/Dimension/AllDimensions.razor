@@ -1,0 +1,66 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@inject HttpClient Http
+@page "/Dimension/AllDimensions"
+@inject NavigationManager NavigationManager
+@using BlazorCodeFirst.Shared.Enums
+
+<h3>Element Dimension List</h3>
+<button onclick="@RedirectToAdd">Add New Item</button>
+@if (dimensionList == null)
+{
+    <p><em>There is no dimension at this moment.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Created At</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dimension in dimensionList)
+            {
+            <tr>
+                <td>@dimension.Id</td>
+                <td>@dimension.Name</td>
+                <td>@(dimension.DimensionType == DimensionType.Width) ? "Width": "Height"</td>
+                <td>@dimension.CreatedAt</td>
+                <td><a href="/ElementType/EditElementType/@dimension.Id">Edit</a></td>
+                <td><button onclick="">Delete</button></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    private Dimension[] dimensionList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dimensionList = await Http.GetFromJsonAsync<Dimension[]>("api/Dimension/Getlist");
+    }
+
+    protected async Task DeleteElementType(int id)
+    {
+        await Http.DeleteAsync($"api/Dimension/DeleteDimension/{id}");
+        RedirectTo();
+    }
+
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("Dimension/Alldimensions");
+    }
+
+    void RedirectToAdd()
+    {
+        NavigationManager.NavigateTo("Dimension/Adddimension");
+    }
+}

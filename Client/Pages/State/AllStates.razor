@@ -1,0 +1,59 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@inject HttpClient Http
+@page "/State/AllStates"
+@inject NavigationManager NavigationManager
+
+<h3>State List</h3>
+
+@if (stateList == null)
+{
+    <p><em>There is no state at this moment.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>code</th>
+                <th>Created At</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var state in stateList)
+            {
+            <tr>
+                <td>@state.Id</td>
+                <td>@state.Name</td>
+                <td>@state.Code</td>
+                <td>@state.CreatedAt</td>
+                <td><a href="/State/EditState/@state.Id">Edit</a></td>
+                <td><button onclick="">Delete</button></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    private State[] stateList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        stateList = await Http.GetFromJsonAsync<State[]>("api/State/Getlist");
+    }
+
+    protected async Task DeleteElementType(int id)
+    {
+        await Http.DeleteAsync($"api/State/DeleteState/{id}");
+        RedirectTo();
+    }
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("State/AllStates");
+    }
+}

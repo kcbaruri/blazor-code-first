@@ -1,0 +1,96 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+@using BlazorCodeFirst.Shared.Models.ViewModels;
+@using System.IO;
+@inject HttpClient Http
+@using System.Xml;
+@using System.Xml.Serialization;
+@page "/Order/AddOrder"
+
+<h3>Add New Order</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="custom-control-label">Order Name</label>
+            <input for name="Name" value="" bind="@order.Name" placeholder="Enter order name" />
+        </div>
+
+        <div class="form-group">
+            <label for="Status" class="custom-control-label">State Code</label>
+            <select for="Status" class="form-control" bind="@order.StateCode">
+                <option disabled hidden selected value="">--Select state code--</option>
+
+                @foreach (var state in stateList)
+                {
+                    <option value="@state.Code">@state.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <component name="window_details" bind-="@subElementList" type="typeof(Window)" subElementList="@subElementList" elementTypeList="@elementTypeList" subElement="@subElement" render-mode="Server" />
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" onclick="">Save</button>
+        </div>
+    </div>
+</div>
+@code {
+    string message = "";
+    [Parameter]
+    public Order order { get; set; }
+    public List<State> stateList = new List<State>();
+    public List<SubElement> subElementList { get; set; }
+    public List<ElementType> elementTypeList { get; set; }
+    public SubElement subElement = new SubElement();
+    public string orderDetails = string.Empty;
+
+    protected async Task CreateNewOrder()
+    {
+
+        List<OrderViewModel> Orders = new List<OrderViewModel>();
+        OrderViewModel orderViewModel = new OrderViewModel();
+        orderViewModel.Name = order.Name;
+        orderViewModel.State = order.StateCode;
+        Window window = new Window();
+        window.subElement = subElement;
+        window.subElementList = subElementList;
+        orderDetails = Serialize(window);
+
+        using (var client = new HttpClient())
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/Order/AddOrder");
+            request.Content = new StringContent(
+                JsonConvert.SerializeObject(new { Name = order.Name, StateCode = order.StateCode, Details = orderDetails, CreatedAt = DateTime.UtcNow }),
+                Encoding.UTF8, "application/json");
+
+            var response = await client.SendAsync(request);
+
+        }
+    }
+
+    public static string Serialize(object dataToSerialize)
+    {
+        if (dataToSerialize == null) return null;
+
+        using (StringWriter stringwriter = new System.IO.StringWriter())
+        {
+            var serializer = new XmlSerializer(dataToSerialize.GetType());
+            serializer.Serialize(stringwriter, dataToSerialize);
+            return stringwriter.ToString();
+        }
+    }
+
+    public static T Deserialize<T>(string xmlText)
+    {
+        if (String.IsNullOrWhiteSpace(xmlText)) return default(T);
+
+        using (StringReader stringReader = new System.IO.StringReader(xmlText))
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            return (T)serializer.Deserialize(stringReader);
+        }
+    }
+}

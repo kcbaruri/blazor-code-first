@@ -1,0 +1,68 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@inject HttpClient Http
+@page "/Order/AllOrders"
+@inject NavigationManager NavigationManager
+
+<h3>Order List</h3>
+<button onclick="@RedirectToAdd">Add New Order</button>
+
+@if (orderList == null)
+{
+    <p><em>There is no order created at this moment.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>State</th>
+                <th>Created At</th>
+                <th>Edit</th>
+                <th>Details</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in orderList)
+            {
+            <tr>
+                <td>@order.Id</td>
+                <td>@order.Name</td>
+                <td>@order.StateCode</td>
+                <td>@order.CreatedAt</td>
+                <td><a href="/Order/EditOrder/@order.Id">Edit</a></td>
+                <td><a href="/Order/ViewOrder/@order.Id">View Details</a></td>
+                <td><button onclick="">Delete</button></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    private Order[] orderList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orderList = await Http.GetFromJsonAsync<Order[]>("api/Order/Getlist");
+    }
+
+    protected async Task DeleteElementType(int id)
+    {
+        await Http.DeleteAsync($"api/Order/DeleteOrder/{id}");
+        RedirectTo();
+    }
+
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("Order/AllOrders");
+    }
+
+    void RedirectToAdd()
+    {
+        NavigationManager.NavigateTo("Order/AddOrder");
+    }
+}

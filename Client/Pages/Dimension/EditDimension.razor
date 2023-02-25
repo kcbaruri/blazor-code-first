@@ -1,0 +1,86 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+@using System.Net
+@using System.IO
+
+@inject HttpClient Http
+@page "/Dimension/EditDimension"
+@inject NavigationManager NavigationManager
+@using BlazorCodeFirst.Shared.Enums
+
+
+<h3>Edit dimension</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="custom-control-label">Dimension Name</label>
+            <input for name="Name" value="" bind="@dimension.Name" placeholder="Enter dimension name" />
+        </div>
+        <div class="form-group">
+            <label for="Status" class="custom-control-label">Dimension Type</label>
+            <select for="Status" class="form-control" bind="@dimension.DimensionType">
+                <option disabled hidden selected value="">--Select the dimension type--</option>
+                <option value="@DimensionType.Width">Width</option>
+                <option value="@DimensionType.Height">Height</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" onclick="">Save</button>
+        </div>
+    </div>
+</div>
+@code {
+
+    string message = "";
+
+    [Parameter]
+    public string Id { get; set; }
+
+    Dimension dimension = new Dimension();
+
+    protected async Task OnInitAsync()
+    {
+        string html = string.Empty;
+        string url = $"api/Dimension/GetDimensionById/{Convert.ToInt32(Id)}";
+
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        request.AutomaticDecompression = DecompressionMethods.GZip;
+
+        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+        using (Stream stream = response.GetResponseStream())
+        using (StreamReader reader = new StreamReader(stream))
+        {
+            dynamic json = JsonConvert.DeserializeObject(reader.ReadToEnd());
+
+            foreach (var item in json)
+            {
+                dimension.Name = item.ElementTypeName;
+                dimension.DimensionType = item.DimensionType;
+                Id = item.Id;
+            }
+        }
+    }
+
+    protected async Task UpdateDimension()
+    {
+        using (var client = new HttpClient())
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, "api/Dimension/UpdateDimension");
+            request.Content = new StringContent(
+                JsonConvert.SerializeObject(new { Name = dimension.Name, DimensionType = dimension.DimensionType, UpdatedAt = DateTime.UtcNow }),
+                Encoding.UTF8, "application/json");
+
+            var response = await client.SendAsync(request);
+
+        }
+
+        RedirectTo();
+    }
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("Dimension/AllDimensions");
+    }
+}

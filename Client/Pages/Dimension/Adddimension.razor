@@ -1,0 +1,49 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+@using BlazorCodeFirst.Shared.Enums
+
+@inject HttpClient Http
+@page "/Dimension/AddDimension"
+
+
+
+<h3>Add Dimension</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="custom-control-label">Dimension Name</label>
+            <input for name="Name" value="" bind="@dimension.Name" placeholder="Enter dimension name" />
+        </div>
+        <div class="form-group">
+            <label for="Status" class="custom-control-label">Dimension Type</label>
+            <select for="Status" class="form-control" bind="@dimension.DimensionType">
+                <option disabled hidden selected value="">--Select the dimension type--</option>
+                <option value="@DimensionType.Width">Width</option>
+                <option value="@DimensionType.Height">Height</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" onclick="@CreateNewDimension">Save</button>
+        </div>
+    </div>
+</div>
+@code {
+    Dimension dimension = new Dimension();
+    string message = "";
+
+    protected async Task CreateNewDimension()
+    {
+        using (var client = new HttpClient())
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/Dimension/AddDimension");
+            request.Content = new StringContent(
+                JsonConvert.SerializeObject(new { Name = dimension.Name, DimensionType = dimension.DimensionType, CreatedAt = DateTime.UtcNow }),
+                Encoding.UTF8, "application/json");
+
+            var response = await client.SendAsync(request);
+
+        }
+    }
+}

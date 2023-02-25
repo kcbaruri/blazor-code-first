@@ -1,0 +1,79 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@using Newtonsoft.Json
+@using System.Text
+@using BlazorCodeFirst.Shared.Models.ViewModels;
+
+@inject HttpClient Http
+@page "/Order/Window"
+
+
+<h3>Window</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="custom-control-label">Element</label>
+            <input for name="Name" value="" bind="@subElement.Element" placeholder="Enter number of element" />
+        </div>
+
+        <div class="form-group">
+            <label class="custom-control-label">Type</label>
+            <select for="subelement_type" class="form-control" bind="@subElement.type">
+                <option disabled hidden selected value="">--Select type--</option>
+
+                @foreach (var element in elementTypeList)
+                {
+                    <option value="@element.ElementTypeName">@element.ElementTypeName</option>
+                }
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="subelement_width" class="custom-control-label">Element type(Width)</label>
+            <select for="subelement_width" class="form-control" bind="@subElement.Width">
+                <option disabled hidden selected value="">--Select width--</option>
+
+                @foreach (var width in subElementList)
+                {
+                    <option value="@width.Width">@width.Width</option>
+                }
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="Status" class="custom-control-label">Element type(Height)</label>
+            <select for="subelement_height" class="form-control" bind="@subElement.Height">
+                <option disabled hidden selected value="">--Select width--</option>
+
+                @foreach (var width in subElementList)
+                {
+                    <option value="@width.Height">@width.Height</option>
+                }
+
+            </select>
+        </div>
+       
+    </div>
+</div>
+
+@functions {
+
+    string message = "";
+
+    [Parameter]
+    public string Id { get; set; }
+
+    [Parameter]
+    public List<SubElement> subElementList { get; set; }
+
+    [Parameter]
+    public SubElement subElement { get; set; }
+
+    [Parameter]
+    public Window window { get; set; }
+
+    [Parameter]
+    public List<ElementType> elementTypeList { get; set; }
+}

@@ -1,0 +1,64 @@
+﻿@using BlazorCodeFirst.Shared.Models.Entities
+@inject HttpClient Http
+@page "/ElementType/AllElementTypes"
+@inject NavigationManager NavigationManager
+
+<h3>Element Type List</h3>
+<button onclick="@RedirectToAdd">Add New Element Type</button>
+
+@if (elementTypeList == null)
+{
+    <p><em>There is no element type available at this moment.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Created At</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var elementType in elementTypeList)
+            {
+            <tr>
+                <td>@elementType.Id</td>
+                <td>@elementType.ElementTypeName</td>
+                <td>@elementType.CreatedAt</td>
+                <td><a href="/ElementType/EditElementType/@elementType.Id">Edit</a></td>
+                <td><button onclick="">Delete</button></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    private ElementType[] elementTypeList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        elementTypeList = await Http.GetFromJsonAsync<ElementType[]>("api/Elementtype/Getlist");
+    }
+
+    protected async Task DeleteElementType(int id)
+    {
+        await Http.DeleteAsync($"api/ElementType/DeleteElementType/{id}");
+        RedirectTo();
+    }
+
+
+    void RedirectTo()
+    {
+        NavigationManager.NavigateTo("ElementType/AllElementTypes");
+    }
+
+    void RedirectToAdd()
+    {
+        NavigationManager.NavigateTo("ElementType/AddElementType");
+    }
+}
