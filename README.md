@@ -13,3 +13,7 @@ Runs at near-native performance
 Runs in a memory-safe, sandbox
 It compiles from a range of languages, i.e., .NET, C, C++, Java, Rust, etc.
 The main advantage of WebAssembly is that it handles memory-rich jobs and multi-threading very well as compared to javascript.
+
+What is Code-First?
+#
+Entity Framework introduced the Code-First approach with Entity Framework 4.1. Code-First is mainly useful in Domain Driven Design. In the Code-First approach, you focus on the domain of your application and start creating classes for your domain entity rather than design your database first and then create the classes which match your database design.
